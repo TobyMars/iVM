@@ -8,8 +8,12 @@
 
 #include <stdio.h>
 
-int main(int argc, const char * argv[]) {
-    // insert code here...
-    printf("Hello, World!\n");
+#include "monalisp.h"
+
+int
+main(int argc, const char * argv[])
+{
+    monalisp(argc, argv);
+    
     return 0;
 }

@@ -1,0 +1,11 @@
+== test_chunk.vm ==
+0000    1 OP_CONSTANT         0 '1'
+0002    1 OP_CONSTANT         1 '2'
+0004    1 OP_ADD
+0005    1 OP_CONSTANT         2 '3'
+0007    1 OP_ADD
+0008    1 OP_CONSTANT         3 '4'
+0010    1 OP_ADD
+0011    1 OP_CONSTANT         4 '-5'
+0013    1 OP_MULTIPLY
+0014  666 OP_RETURN
