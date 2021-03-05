@@ -330,7 +330,7 @@ push_htab(hash_table_s *htab, file_info *fi, char *key, int sz, char *dt)
     debug("%s, %d bytes \n", item.key, strlen(item.key));
 #endif
     
-    rti = hash_search(htab, item, ENTER);
+    rti = hash_search(htab, item, HASH_ENTER);
     if (!rti) return 0;
     
     ml_util_fwrite("elements.txt", item.key);
@@ -371,7 +371,7 @@ htab_add(hash_table_s *htab, char *key, int ksz, char *dt, int dsz)
     debug("%s, %d bytes \n", item.key, strlen(item.key));
 #endif
     
-    rti = hash_search(htab, item, ENTER);
+    rti = hash_search(htab, item, HASH_ENTER);
     if (!rti) return 0;
     
     ml_util_fwrite("keyword_char.txt", item.key);
@@ -832,7 +832,7 @@ parse_syntax_object(hash_table_s *htab, file_info *fi, bool parsing_sub_obj)
         
         memset(&item, 0, sizeof(item));
         item.key = "@";
-        rti = hash_search(htab, item, ENTER);
+        rti = hash_search(htab, item, HASH_ENTER);
         if (!rti) return 0;
     }
     
@@ -995,7 +995,7 @@ find_insert_htab(ENTRY item, hash_table_s *htab)
         debug("insert hash entry: %s, %lu bytes\n", item.key, strlen(item.key));
 #endif
         
-        rti = hash_search(htab, item, ENTER);
+        rti = hash_search(htab, item, HASH_ENTER);
         if (!rti) {
             debug("hash entry insertion failed. %s \n", item.key);
             goto END;

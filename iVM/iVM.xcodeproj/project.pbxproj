@@ -46,6 +46,8 @@
 		4925478A25D925D0000A6111 /* hash_search.c in Sources */ = {isa = PBXBuildFile; fileRef = 4925476525D92345000A6111 /* hash_search.c */; };
 		4925479725DA8326000A6111 /* test_cases.c in Sources */ = {isa = PBXBuildFile; fileRef = 4925479625DA8326000A6111 /* test_cases.c */; };
 		4925479E25DBCDAA000A6111 /* compiler.c in Sources */ = {isa = PBXBuildFile; fileRef = 4925479D25DBCDAA000A6111 /* compiler.c */; };
+		49C4134A25EF47AC0043F6AD /* instruction.c in Sources */ = {isa = PBXBuildFile; fileRef = 49C4134925EF47AC0043F6AD /* instruction.c */; };
+		49C4134D25F095590043F6AD /* register.c in Sources */ = {isa = PBXBuildFile; fileRef = 49C4134C25F095590043F6AD /* register.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -160,6 +162,10 @@
 		4925479A25DACC41000A6111 /* test_vm.lisp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = test_vm.lisp; path = test/test_vm.lisp; sourceTree = "<group>"; };
 		4925479C25DBCDAA000A6111 /* compiler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = compiler.h; sourceTree = "<group>"; };
 		4925479D25DBCDAA000A6111 /* compiler.c */ = {isa = PBXFileReference; indentWidth = 4; lastKnownFileType = sourcecode.c.c; path = compiler.c; sourceTree = "<group>"; };
+		49C4134825EF47AC0043F6AD /* instruction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = instruction.h; sourceTree = "<group>"; };
+		49C4134925EF47AC0043F6AD /* instruction.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = instruction.c; sourceTree = "<group>"; };
+		49C4134B25F095590043F6AD /* register.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = register.h; sourceTree = "<group>"; };
+		49C4134C25F095590043F6AD /* register.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = register.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -192,6 +198,10 @@
 		492546FD25D7CA18000A6111 /* iVM */ = {
 			isa = PBXGroup;
 			children = (
+				49C4134B25F095590043F6AD /* register.h */,
+				49C4134C25F095590043F6AD /* register.c */,
+				49C4134825EF47AC0043F6AD /* instruction.h */,
+				49C4134925EF47AC0043F6AD /* instruction.c */,
 				4925479A25DACC41000A6111 /* test_vm.lisp */,
 				4925479625DA8326000A6111 /* test_cases.c */,
 				4925479525DA8326000A6111 /* test_cases.h */,
@@ -351,6 +361,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49C4134A25EF47AC0043F6AD /* instruction.c in Sources */,
 				4925478525D92345000A6111 /* chunk.c in Sources */,
 				4925477A25D92345000A6111 /* syntax.c in Sources */,
 				4925477125D92345000A6111 /* parser.c in Sources */,
@@ -366,6 +377,7 @@
 				492546FF25D7CA18000A6111 /* main.c in Sources */,
 				4925478725D92345000A6111 /* reader.c in Sources */,
 				4925477225D92345000A6111 /* variable.c in Sources */,
+				49C4134D25F095590043F6AD /* register.c in Sources */,
 				4925476B25D92345000A6111 /* bin_tree.c in Sources */,
 				4925477725D92345000A6111 /* value.c in Sources */,
 				4925477F25D92345000A6111 /* memory.c in Sources */,

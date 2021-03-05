@@ -2,15 +2,15 @@
 
 #include "test_cases.h"
 
-#include "debug.h"
-#include "reader.h"
-#include "gc.h"
-#include "util.h"
-#include "mem.h"
+#include "../debug.h"
+#include "../reader.h"
+#include "../gc.h"
+#include "../util.h"
+#include "../mem.h"
 
-#include "compiler.h"
-#include "disassembler.h"
-#include "vm.h"
+#include "../compiler.h"
+#include "../disassembler.h"
+#include "../vm.h"
 
 #define SWITCH false
 

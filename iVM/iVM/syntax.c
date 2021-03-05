@@ -1044,7 +1044,7 @@ push_syntax_htab(char *key, tr_node_s *root)
     
     item.key = key;
     item.data = root;
-    rti = hash_search(&syntax_htab, item, ENTER);
+    rti = hash_search(&syntax_htab, item, HASH_ENTER);
     
     if (rti) mark_in_syntax_tree(root);
     
@@ -1090,8 +1090,8 @@ pop_syntax_htab(char *key)
     }
     
     
-    
-    rti = hash_search(&syntax_htab, item, FIND);
+    /* HASH_FIND */
+    rti = hash_search(&syntax_htab, item, 0);
     if (!rti) {
         
         func_fail();

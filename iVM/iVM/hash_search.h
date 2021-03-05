@@ -14,6 +14,7 @@ typedef enum
     HASH_ENTER
 } ACTION;
 
+#define FIND 0
 
 typedef struct entry_s
 {

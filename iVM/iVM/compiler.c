@@ -41,60 +41,71 @@ compile_func_form(form_s *form)
     char *name = l->obj.token.value.symbol;
     debug("name: %s \n", name);
     
-    /* sequence the arithmetic nodes into vm stack(unlimited count of registers...)
+    /* Instruction Format(Length 32bit):
+     * Operator(1B)  Operands(3B)
+     *
+     * Register x(index 32bit):
+     * Rx(double)
+     *
+     * Constant y(index 32bit):
+     * Ky(double)
+     *
+     * Variable z(index 32bit):
+     * Vz(double)
      *
      * (+ 1 2)
-     * push + (operator)
-     * push 1 (oprand)
-     * push 2 (oprand)
-     * pop 2
-     * pop 1
-     * pop +
-     * add 1 2
-     * 3
+     * ADD      (1B)
+     * 1        (1B)
+     * 2        (2B)
      *
-     * (+ 1 (- 2 3))
-     * push +
-     * push 1
-     * push R1
-     * push -
-     * push 2
-     * push 3
-     * pop 3
-     * pop 2
-     * pop -
-     * sub 2 3
-     * R1 -1
-     * pop R1
-     * pop 1
-     * pop +
-     * add 1 -1
-     * 0
+     * push     ADD-1-2
+     * pop      ADD-1-2
+     * CALL     R0:ADD-1-2      R0:3
+     * RET      R0:3
+     * 3
+     
+     * (+ 256 (- 2 3))
+     * ADD      (1B)
+     * 256      (2B)
+     * R0       (1B):RET (- 2 3)
+     * SUB      (1B)
+     * 2        (1B)
+     * 3        (2B)
+     *
+     * push     ADD-256-R0
+     * push     SUB-2-3
+     * pop      SUB-2-3
+     * CALL     R0:SUB-2-3      R0:-1
+     * pop      ADD-256-R0
+     * CALL     R0:ADD-256-R0   R0:255
+     * RET      R0:255
+     * 255
+     *
+     * (+ (* 2 128) (- 2 3))
+     * ADD      (1B)
+     * R0       (2B):RET (* 2 128)
+     * R1       (1B):RET (- 2 3)
+     * ...
+     * push     ADD-R0-R1
+     * push     SUB-2-3
+     * push     MUL-2-128
+     * pop      MUL-2-128
+     * CALL     R0:MUL-2-128    R0:256
+     * pop      SUB-2-3
+     * CALL     R1:SUB-2-3      R1:-1
+     * pop      ADD-R0-R1
+     * CALL     R0:ADD-R0-R1    R0:255
+     * RET      R0
+     * 255
+     *
      */
+    
     
     /* push function name */
     uint8_t operator;
-    
-    if (!strcasecmp(name, "+")) {
-        operator = OP_ADD;
-        debug("OP_ADD \n");
-    }
-    else if (!strcasecmp(name, "-")) {
-        operator = OP_SUBTRACT;
-        debug("OP_SUBTRACT \n");
-    }
-    else if (!strcasecmp(name, "*")) {
-        operator = OP_MULTIPLY;
-        debug("OP_MULTIPLY \n");
-    }
-    else if (!strcasecmp(name, "/")) {
-        operator = OP_DIVIDE;
-        debug("OP_DIVIDE \n");
-    }
-    else {
-        debug_err("Unknown name:%s \n", name);
-        goto FAIL;
-    }
+    instruction_t i = 0;
+    int r_index = -1;
+    int r_index_end = -1;
     
     chunk_t *chunk = &c->chunk;
     int line = 1; /* TODO */
@@ -107,11 +118,21 @@ compile_func_form(form_s *form)
         if (obj_is_number(obj)) {
             obj_show(obj);
             v = (value_t)token_get_fixnum(&obj->token);
-            int constant = chunk_add_constant(chunk, v);
-            chunk_write(chunk, OP_CONSTANT, line);
-            chunk_write(chunk, constant, line);
+            if (r_index == -1) {
+                r_index = chunk_add_reg(chunk, v);
+            }
+            else {
+                r_index_end = chunk_add_reg(chunk, v);
+            }
         }
         else if (obj_is_list(obj)) {
+            
+            if (r_index == -1) {
+                r_index = chunk->reg_array.count;
+            }
+            else {
+                r_index_end = chunk->reg_array.count;
+            }
             
             //            form_s *f = l->obj.sub;
             //            form_show(f);
@@ -130,9 +151,33 @@ compile_func_form(form_s *form)
         if (l->next && l->next->is_head) break;
     }
     
-    chunk_write(chunk, operator, line);
+    debug("r_index:%d, r_index_end:%d \n", r_index, r_index_end);
+    if (!strcasecmp(name, "+")) {
+        operator = OP_ADD;
+        debug("OP_ADD \n");
+        i = i_encode_add(r_index, r_index_end);
+    }
+    else if (!strcasecmp(name, "-")) {
+        operator = OP_SUBTRACT;
+        debug("OP_SUBTRACT \n");
+        i = i_encode_sub(r_index, r_index_end);
+    }
+    else if (!strcasecmp(name, "*")) {
+        operator = OP_MULTIPLY;
+        debug("OP_MULTIPLY \n");
+        i = i_encode_multiply(r_index, r_index_end);
+    }
+    else if (!strcasecmp(name, "/")) {
+        operator = OP_DIVIDE;
+        debug("OP_DIVIDE \n");
+        i = i_encode_divide(r_index, r_index_end);
+    }
+    else {
+        debug_err("Unknown name:%s \n", name);
+        goto FAIL;
+    }
     
-    //    disassemble_chunk(chunk, "test chunk");
+    chunk_write(chunk, i, line);
     
 DONE:
     out(ok, COMPILER_OK);
@@ -194,8 +239,7 @@ compile(form_s *form)
                 goto FAIL;
         }
         
-        /* TODO */
-        chunk_write(&c->chunk, OP_RETURN, 666);
+        chunk_write(&c->chunk, i_encode_return(), 666);
         
         f = f->next;
     }

@@ -7,7 +7,7 @@
 
 #include "mem.h"
 
-#define ALIGN_LEN sizeof(stack_t)
+#define ALIGN_LEN sizeof(ml_stack_t)
 
 
 static ml_stack_t *m_stack = NULL;

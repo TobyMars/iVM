@@ -84,7 +84,7 @@ func_add(function_s *func)
     
     entry.key = ml_util_str_clone(f->name, mm_malloc);  /* clone the name */
     entry.data = f;
-    entry_rt = hash_search(&m_func_htab, entry, ENTER);
+    entry_rt = hash_search(&m_func_htab, entry, HASH_ENTER);
     if (!entry_rt) {
         
         debug_err("push varible %s into hash table, failed \n", f->name);

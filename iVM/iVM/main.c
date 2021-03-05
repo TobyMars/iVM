@@ -13,7 +13,7 @@
 int
 main(int argc, const char * argv[])
 {
-    monalisp(argc, argv);
+    int ret = monalisp(argc, argv);
     
-    return 0;
+    return ret;
 }

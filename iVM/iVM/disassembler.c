@@ -24,89 +24,105 @@ disassemble_load(const char *fname, chunk_t *chunk)
     int cnt;
     char *s;
     size_t len;
+    int offset = 0;
     
-    ml_util_show_buf(finfo.f_buf, finfo.buf_sz);
+    s = finfo.f_buf;
+    len = finfo.buf_sz;
+    ml_util_show_buf(s, len);
     
-    /* get file name */
-    cnt = sscanf(finfo.f_buf, "== %s ==\r\n", buf);
+    /* get file name
+     */
+    cnt = sscanf(finfo.f_buf, "== %s ==\n", buf);
     if (cnt == 1) {
         debug("file name: %s \n", buf);
     }
+    offset = sprintf(buf, "== %s ==\n", buf);
+    s += offset;
+    len -= offset;
+    ml_util_show_buf(s, len);
     
-    s = finfo.f_buf + strlen(buf) + 7;
-    len = finfo.buf_sz - (strlen(buf) + 7);
+    /* get registers
+     */
+    reg_t reg = 0;
+    reg_array_t *array = &chunk->reg_array;
+    cnt = sscanf(s, "registers: [ 0x%08x ", &reg);
+    if (cnt != 1) {
+        goto FAIL;
+    }
+    offset = sprintf(buf, "registers: [ 0x%08x ", reg);
+    reg_write(array, reg);
+    reg_print(reg);
+    s += offset;
+    len -= offset;
+    ml_util_show_buf(s, len);
+    while (1) {
+        cnt = sscanf(s, "0x%08x ", &reg);
+        if (cnt != 1) {
+            if (memcmp(s, "]\n", 2)) {
+                goto FAIL;
+            }
+            offset = strlen("]\n");
+            s += offset;
+            len -= offset;
+            ml_util_show_buf(s, len);
+            break;
+        }
+        
+        offset = sprintf(buf, "0x%08x ", reg);
+        reg_write(array, reg);
+        reg_print(reg);
+        s += offset;
+        len -= offset;
+        ml_util_show_buf(s, len);
+    }
+    
+    /* get instruction count
+     */
+    int count = 0;
+    cnt = sscanf(s, "instruction count:%08d\n", &count);
+    if (cnt != 1) {
+        goto FAIL;
+    }
+    offset = sprintf(buf, "instruction count:%08d\n", count);
+    s += offset;
+    len -= offset;
     ml_util_show_buf(s, len);
     
     int addr = 0;
     int line = 0;
     char operator[32];
-    int constant_index = 0;
-    float val = 0;
-    int offset = 0;
+    instruction_t instruction = 0;
     while (len > 0) {
         memset(operator, 0, sizeof(operator));
         
-        cnt = sscanf(s, "%04d %4d %16s %4d '%g'\n",
-                     &addr, &line, operator, &constant_index, &val);
-        if (cnt == 5) {
-            debug("%04d %4d %-16s %4d '%g'\n", addr, line, operator, constant_index, val);
-            
-            offset = sprintf(buf, "%04d %4d %-16s %4d '%g'\n",
-                             addr, line, operator, constant_index, val);
-            //            debug("offset:%d \n", offset);
+        cnt = sscanf(s, "%04x:%08x %4d %s\n",
+                     &addr, &instruction, &line, operator);
+        if (cnt == 4) {
+            debug("%04x:%08x %4d %s\n", addr, instruction, line, operator);
+            offset = sprintf(buf, "%04x:%08x %4d %s\n", addr, instruction, line, operator);
         }
         else {
-            debug("%04d %4d %s\n", addr, line, operator);
-            cnt = sscanf(s, "%04d %4d %s\n", &addr, &line, operator);
-            offset = sprintf(buf, "%04d %4d %s\n", addr, line, operator);
-            //            debug("offset:%d \n", offset);
+            debug_err("unknown codes: \n");
+            ml_util_show_buf(s, len);
+            break;
         }
         
-        uint8_t op = OP_UNKNOWN;
-        if (!strcmp(operator, "OP_CONSTANT")) {
-            op = OP_CONSTANT;
-            int index = chunk_add_constant(chunk, val);
-            chunk_write(chunk, OP_CONSTANT, line);
-            chunk_write(chunk, index, line);
-            
-        }
-        else if (!strcmp(operator, "OP_NEGATE")) {
-            op = OP_NEGATE;
-            chunk_write(chunk, op, line);
-        }
-        else if (!strcmp(operator, "OP_ADD")) {
-            op = OP_ADD;
-            chunk_write(chunk, op, line);
-        }
-        else if (!strcmp(operator, "OP_MULTIPLY")) {
-            op = OP_MULTIPLY;
-            chunk_write(chunk, op, line);
-        }
-        else if (!strcmp(operator, "OP_SUBTRACT")) {
-            op = OP_SUBTRACT;
-            chunk_write(chunk, op, line);
-        }
-        else if (!strcmp(operator, "OP_DIVIDE")) {
-            op = OP_DIVIDE;
-            chunk_write(chunk, op, line);
-        }
-        else if (!strcmp(operator, "OP_RETURN")) {
-            op = OP_RETURN;
-            chunk_write(chunk, op, line);
-        }
-        else {
-            debug_err("OP_UNKNOWN:%s \n", operator);
-        }
+        chunk_write(chunk, instruction, line);
         
         s += offset;
         len -= offset;
-        ml_util_show_buf(s, len);
+        if (len > 0) {
+            ml_util_show_buf(s, len);
+        }
     }
     
     disassemble_chunk(chunk, fname);
     
     fe();
     return true;
+    
+FAIL:
+    return false;
 }
 
 static int
@@ -132,6 +148,16 @@ dis_constant_instruction(const char *name, chunk_t *chunk, int offset)
     return (offset + 2);
 }
 
+static void
+log_registers(reg_array_t *array)
+{
+    log_file(m_fname, "registers: [ ");
+    for (int i = 0; i < array->count; i++) {
+        log_file(m_fname, "0x%08x ", array->regs[i]);
+    }
+    log_file(m_fname, "]\n");
+}
+
 void
 disassemble_chunk(chunk_t *chunk, const char *name)
 {
@@ -141,6 +167,12 @@ disassemble_chunk(chunk_t *chunk, const char *name)
     
     debug("== %s ==\n", m_fname);
     log_file(m_fname, "== %s ==\n", m_fname);
+    
+    //    reg_print_all(&chunk->reg_array);
+    log_registers(&chunk->reg_array);
+    
+    debug("instruction count:%08d\n", chunk->count);
+    log_file(m_fname, "instruction count:%08d\n", chunk->count);
     
     for (int offset = 0; offset < chunk->count;) {
         offset = disassemble_instruction(chunk, offset);
@@ -153,23 +185,16 @@ int
 disassemble_instruction(chunk_t *chunk, int offset)
 {
     int i = offset;
+    instruction_t instruction = chunk->code[i];
     
-    debug("%04d ", i);
-    log_file(m_fname, "%04d ", i);
+    debug("%04x:%08x ", i * sizeof(instruction_t), instruction);
+    log_file(m_fname, "%04x:%08x ", i * sizeof(instruction_t), instruction);
     
-    //    if (offset > 0 && chunk->lines[i] == chunk->lines[i - 1]) {
-    //        debug("   | ");
-    //        log_file(m_fname, "   | ");
-    //    }
-    //    else {
-    //        debug("%4d ", chunk->lines[i]);
-    //        log_file(m_fname, "%4d ", chunk->lines[i]);
-    //    }
     debug("%4d ", chunk->lines[i]);
     log_file(m_fname, "%4d ", chunk->lines[i]);
     
-    uint8_t instruction = chunk->code[i];
-    switch (instruction) {
+    opcode_t opcode = (instruction >> 24) & 0xFF;
+    switch (opcode) {
             
         case OP_CONSTANT:
             return dis_constant_instruction("OP_CONSTANT", chunk, i);
@@ -189,6 +214,7 @@ disassemble_instruction(chunk_t *chunk, int offset)
             return dis_simple_instruction("OP_RETURN", i);
             
         default:
+            debug_err(">> unknown instruction: 0x%08x \n", instruction);
             return (i + 1);
     }
 }

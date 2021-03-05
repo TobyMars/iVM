@@ -118,7 +118,7 @@ macro_add(macro_s *macro)
     
     entry.key = ml_util_str_clone(m->name, mm_malloc);  /* clone the name */
     entry.data = m;
-    entry_rt = hash_search(&m_macro_htab, entry, ENTER);
+    entry_rt = hash_search(&m_macro_htab, entry, HASH_ENTER);
     if (!entry_rt) {
         
         debug_err("push varible %s into hash table, failed \n", m->name);

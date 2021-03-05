@@ -212,7 +212,7 @@ hash_search(hash_table_s *htab, ENTRY item, ACTION action)
 
 
 void 
-hash_destroy (hash_table_s *htab)
+hash_destroy(hash_table_s *htab)
 {
     if (!htab) return;
     

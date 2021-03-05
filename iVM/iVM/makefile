@@ -23,7 +23,7 @@ MYCFLAGS = -I $(TEST_CASES)
 MYLDFLAGS = 
 MYLIBS =
 
-TEST_CASES = test_cases
+TEST_CASES = test
 
 # Environment settings, done
 
@@ -37,7 +37,7 @@ ALL_OBJS = monalisp.o lex.o syntax.o reader.o mem.o util.o error.o stack.o obj.o
 	list.o form.o token.o eval.o variable.o hash_search.o bin_tree.o tree.o \
 	parser.o ast_tree.o asg_graph.o printer.o chars.o function.o macro.o \
 	gc.o system.o rules.o chunk.o memory.o disassembler.o value.o vm.o \
-	$(TEST_CASES)/test_cases.o
+	test/test_cases.o log.o compiler.o register.o instruction.o main.o
 
 
 ALL_LIBS = lib_monalisp.a
@@ -91,8 +91,7 @@ monalisp.o:	monalisp.c lex.c syntax.c reader.c mem.c util.c error.c stack.c obj.
 	list.c form.c token.c eval.c variable.c hash_search.c bin_tree.c tree.c \
 	parser.c ast_tree.c asg_graph.c printer.c chars.c function.c macro.c \
 	gc.c system.c rules.c chunk.c memory.c disassembler.c value.c vm.c \
-	$(TEST_CASES)/test_cases.c
-
+	test/test_cases.c log.c compiler.c register.c instruction.c main.c 
 
 
 

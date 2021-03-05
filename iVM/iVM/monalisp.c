@@ -29,7 +29,7 @@
 #include "chunk.h"
 #include "disassembler.h"
 #include "vm.h"
-
+#include "register.h"
 
 #include "test_cases.h"
 
@@ -52,43 +52,14 @@ monalisp(int argc, const char **argv)
     
 #if 1
     //value_test();
-    //chunk_test();
+    reg_test();
+    chunk_test();
     //disassemble_test();
+    
     
     show("Hello iVM \n");
     
     vm_init();
-    //
-    //    chunk_t chunk;
-    //
-    //    chunk_init(&chunk);
-    //
-    //    int constant = chunk_add_constant(&chunk, 1.2);
-    //    chunk_write(&chunk, OP_CONSTANT, 123);
-    //    chunk_write(&chunk, constant, 123);
-    //
-    //    constant = chunk_add_constant(&chunk, 3.4);
-    //    chunk_write(&chunk, OP_CONSTANT, 123);
-    //    chunk_write(&chunk, constant, 123);
-    //
-    //    chunk_write(&chunk, OP_ADD, 123);
-    //
-    //    constant = chunk_add_constant(&chunk, 5.6);
-    //    chunk_write(&chunk, OP_CONSTANT, 123);
-    //    chunk_write(&chunk, constant, 123);
-    //
-    //    chunk_write(&chunk, OP_DIVIDE, 123);
-    //    chunk_write(&chunk, OP_NEGATE, 123);
-    //
-    //    chunk_write(&chunk, OP_RETURN, 123);
-    //
-    //    disassemble_chunk(&chunk, "test chunk");
-    //
-    //    vm_interpret(&chunk);
-    //
-    //    chunk_free(&chunk);
-    //
-    //    vm_free();
 #endif
     
 #if 1
@@ -214,14 +185,12 @@ ml_init(void)
         return LISP_ERR_STACK;
     }
     
-    
     var_rt_t var_rt = var_init();
     if (var_rt != VAR_OK) {
         
         debug_err("err: %d, var_init failed \n", var_rt);
         return LISP_ERR_VAR;
     }
-    
     
     func_rt_t func_rt = func_init();
     if (func_rt != FUNC_OK) {
@@ -237,17 +206,14 @@ ml_init(void)
         return LISP_ERR_MACRO;
     }
     
-    
     lex_rt_t lex_rt = ml_lex_init();
     if (lex_rt != LEX_OK) return LISP_ERR_LEX;
-    
     
     syntax_rt_t syntax_rt = syntax_init();
     if (syntax_rt != SYNTAX_OK) return LISP_ERR_SYNTAX;
     
     parser_rt_t parser_rt = parser_init();
     if (parser_rt != PARSER_OK) return LISP_ERR_PARSER;
-    
     
     reader_rt_t reader_rt = ml_reader_init();
     if (reader_rt != READER_OK) return LISP_ERR_READER;
